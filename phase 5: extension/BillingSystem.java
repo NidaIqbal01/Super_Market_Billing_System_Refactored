@@ -49,30 +49,33 @@ public class BillingSystem {
         }
     }
 
-   public double generateBill() {
+public double generateBill() {
 
-        double subtotal = cartItems.stream()
-                .mapToDouble(i -> i.getPrice() * i.getQuantity())
-                .sum();
+    double subtotal = cartItems.stream()
+            .mapToDouble(i -> i.getPrice() * i.getQuantity())
+            .sum();
 
-        // NEW FEATURE: Discount System
-        double discount = discountStrategy.applyDiscount(subtotal);
-
-        double discountedSubtotal = subtotal - discount;
-
-        double tax = taxCalculator.calculateTax(discountedSubtotal);
-
-        double total = discountedSubtotal + tax;
-
-        System.out.println("\n\t\t================================");
-        System.out.println("\t\t       RECEIPT TOTALS           ");
-        System.out.println("\t\t================================");
-        System.out.printf("\t\tSubtotal: $%.2f\n", subtotal);
-        System.out.printf("\t\tDiscount: -$%.2f\n", discount);
-        System.out.printf("\t\tTax (5%): $%.2f\n", tax);
-        System.out.printf("\t\tTotal Due: $%.2f\n", total);
-        System.out.println("\t\t================================");
-
-        return total;
+    // auto discount rule
+    if (subtotal > 30) {
+        discountStrategy = new PercentageDiscount(5);
+    } else {
+        discountStrategy = new NoDiscount();
     }
+
+    double discount = discountStrategy.applyDiscount(subtotal);
+    double discountedSubtotal = subtotal - discount;
+    double tax = taxCalculator.calculateTax(discountedSubtotal);
+    double total = discountedSubtotal + tax;
+
+    System.out.println("\n\t\t================================");
+    System.out.println("\t\t       RECEIPT TOTALS           ");
+    System.out.println("\t\t================================");
+    System.out.printf("\t\tSubtotal: $%.2f\n", subtotal);
+    System.out.printf("\t\tDiscount: -$%.2f\n", discount);
+    System.out.printf("\t\tTax (5%): $%.2f\n", tax);
+    System.out.printf("\t\tTotal Due: $%.2f\n", total);
+    System.out.println("\t\t================================");
+
+    return total;
+}
 }
