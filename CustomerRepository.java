@@ -1,22 +1,19 @@
+
+package com.mycompany.supermarket;
 import java.util.ArrayList;
-public class CustomerRepository {
+class CustomerRepository {
     private final ArrayList<Customer> customers;
 
-    public CustomerRepository(ArrayList<Customer> customers) {
-        this.customers = customers;
-    }
+    public CustomerRepository(ArrayList<Customer> customers) { this.customers = customers; }
 
-    public ArrayList<Customer> getCustomers() { return customers; }
-
-    public void addCustomer(Customer customer) {
-        customers.add(customer);
-    }
+    public void addCustomer(Customer customer) { customers.add(customer); }
+    
+    // FIXED: Added missing method that caused Maven build to fail
+    public void removeCustomer(Customer customer) { customers.remove(customer); }
 
     public Customer searchCustomer(String id) {
         for (Customer c : customers) {
-            if (c.getCustomerId().equalsIgnoreCase(id)) {
-                return c;
-            }
+            if (c.getCustomerId().equalsIgnoreCase(id)) return c;
         }
         return null;
     }
