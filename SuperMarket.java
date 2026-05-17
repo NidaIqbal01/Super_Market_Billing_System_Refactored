@@ -6,23 +6,20 @@ package com.mycompany.supermarket;
 
 import java.util.ArrayList;
 import java.util.Scanner;
-
-
 public class SuperMarket {
 
     private final ArrayList<Item> items;
     private final ArrayList<Customer> customers;
     private PaymentMethod paymentMethod;
 
-    private final InventoryRepository inventoryRepo;
-    private final CustomerRepository customerRepo;
+    public final InventoryRepository inventoryRepo;
+    public final CustomerRepository customerRepo;
 
     public SuperMarket(ArrayList<Item> items, ArrayList<Customer> customers, PaymentMethod paymentMethod) {
         this.items = items;
         this.customers = customers;
         this.paymentMethod = paymentMethod;
         
-        // Connect clean repositories to abstract data arrays
         this.inventoryRepo = new InventoryRepository(items);
         this.customerRepo = new CustomerRepository(customers);
     }
@@ -54,7 +51,7 @@ public class SuperMarket {
             System.out.println("\t\t3. All Fields");
             System.out.print("\t\tEnter your choice: ");
             int updateChoice = sc.nextInt();
-            sc.nextLine(); // Consume newline
+            sc.nextLine(); 
 
             switch (updateChoice) {
                 case 1 -> {
@@ -89,8 +86,13 @@ public class SuperMarket {
     }
 
     public void deleteItem(String name) {
-        items.removeIf(item -> item.getName().equalsIgnoreCase(name));
-        System.out.println("Deleted item: " + name);
+        Item itemToDelete = inventoryRepo.searchItem(name);
+        if (itemToDelete != null) {
+            inventoryRepo.removeItem(itemToDelete);
+            System.out.println("Deleted item: " + name);
+        } else {
+            System.out.println("Item not found inside inventory system.");
+        }
     }
 
     public Item searchItem(String name) {
@@ -121,7 +123,7 @@ public class SuperMarket {
         System.out.println("\t\t4. All Fields");
         System.out.print("\t\tEnter your choice: ");
         int updateChoice = sc.nextInt();
-        sc.nextLine(); // Consume newline
+        sc.nextLine(); 
 
         switch (updateChoice) {
             case 1 -> {
@@ -170,7 +172,7 @@ public class SuperMarket {
     public void deleteCustomer(String customerId) {
         Customer customerToDelete = customerRepo.searchCustomer(customerId);
         if (customerToDelete != null) {
-            customers.remove(customerToDelete);
+            customerRepo.removeCustomer(customerToDelete);
             System.out.println("\t\tCustomer deleted.");
         } else {
             System.out.println("\t\tCustomer ID not found.");
@@ -180,37 +182,41 @@ public class SuperMarket {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
+        // =========================================================================
+        // RESTORED LOGIN VERIFICATION SYSTEMS
+        // =========================================================================
+        System.out.println("\t\t--------------------------------------------------");
+        System.out.println("\t\t      SUPERMARKET MANAGEMENT SYSTEM LOGIN         ");
+        System.out.println("\t\t--------------------------------------------------");
+        System.out.print("\t\tEnter Username: ");
+        String username = sc.nextLine();
+        System.out.print("\t\tEnter Password: ");
+        String password = sc.nextLine();
+
+        // Standard verification criteria match checks
+        if (!username.equalsIgnoreCase("admin") || !password.equals("admin123")) {
+            System.out.println("\t\tAccess Denied! Invalid credentials logic matched.");
+            System.exit(0);
+        }
+        System.out.println("\t\tAccess Granted! Loading system dashboard structures...");
+
         ArrayList<Item> items = new ArrayList<>();
         ArrayList<Customer> customers = new ArrayList<>();
 
         PaymentMethod pm = new CashPayment(); 
         SuperMarket supermarket = new SuperMarket(items, customers, pm);
-
-        // Pre-populating a default admin account for demonstration
-        String adminUser = "admin";
-        String adminPass = "admin123";
+        BillingSystem billingSystem = new BillingSystem();
 
         while (true) {
             System.out.println("\n\t\t* * * * * * * * * * * * * * * * * * * * * * * * * ");
             System.out.println("\t\t* * * * Welcome to the Supermarket Main Menu * * *");
-            System.out.println("\n\t\t* * * * * * * * * * * * * * * * * * * * * * * * * ");
+            System.out.println("\t\t* * * * * * * * * * * * * * * * * * * * * * * * * ");
             System.out.println("\t\t| 1) Customer  |\n\t\t| 2) Inventory |\n\t\t| 3) Billing   |\n\t\t| 4) Exit      |\n\t\t| Enter your choice: ");
             int choice = sc.nextInt();
-            sc.nextLine(); // Consume newline
+            sc.nextLine(); 
 
             switch (choice) {
                 case 1 -> {
-                    // Admin Authentication verification
-                    System.out.print("\t\tEnter Admin Username: ");
-                    String user = sc.nextLine();
-                    System.out.print("\t\tEnter Admin Password: ");
-                    String pass = sc.nextLine();
-
-                    if (!user.equals(adminUser) || !pass.equals(adminPass)) {
-                        System.out.println("\t\tAccess Denied: Invalid Admin Credentials.");
-                        break;
-                    }
-
                     boolean customerMenuActive = true;
                     while (customerMenuActive) {
                         System.out.println("\n\t\tCustomer Management:");
@@ -322,17 +328,6 @@ public class SuperMarket {
                     }
                 }
                 case 2 -> {
-                    // Admin Authentication verification
-                    System.out.print("\t\tEnter Admin Username: ");
-                    String user = sc.nextLine();
-                    System.out.print("\t\tEnter Admin Password: ");
-                    String pass = sc.nextLine();
-
-                    if (!user.equals(adminUser) || !pass.equals(adminPass)) {
-                        System.out.println("\t\tAccess Denied: Invalid Admin Credentials.");
-                        break;
-                    }
-
                     boolean inventoryMenuActive = true;
                     while (inventoryMenuActive) {
                         System.out.println("\n\t\tInventory Management:");
@@ -383,31 +378,19 @@ public class SuperMarket {
                     }
                 }
                 case 3 -> {
-                    // Customer Authentication verification
-                    System.out.print("\t\tEnter your Customer ID to login: ");
-                    String loginId = sc.nextLine();
-                    Customer activeCustomer = supermarket.customerRepo.searchCustomer(loginId);
-
-                    if (activeCustomer == null) {
-                        System.out.println("\t\tAccess Denied: Customer ID not found in database. Please register via Admin.");
-                        break;
-                    }
-
-                    System.out.println("\t\tLogin successful! Welcome, " + activeCustomer.getName());
-
-                    BillingSystem billingSystem = new BillingSystem();
                     while (true) {
                         System.out.println("\n\t\tBilling System:");
                         System.out.println("\t\t1. Add Item to Cart");
                         System.out.println("\t\t2. View Cart");
-                        System.out.println("\t\t3. Empty Cart");
-                        System.out.println("\t\t4. Generate Bill");
-                        System.out.println("\t\t5. Back to Main Menu");
+                        System.out.println("\t\t3. Update Cart Quantity (F-13)");
+                        System.out.println("\t\t4. Remove Item from Cart (F-14)");
+                        System.out.println("\t\t5. Generate Bill & Pay");
+                        System.out.println("\t\t6. Back to Main Menu");
                         System.out.print("\t\tEnter your choice: ");
                         int billingChoice = sc.nextInt();
                         sc.nextLine();
 
-                        if (billingChoice == 5) break;
+                        if (billingChoice == 6) break;
 
                         switch (billingChoice) {
                             case 1 -> {
@@ -417,22 +400,47 @@ public class SuperMarket {
                                 if (cartItem != null) {
                                     System.out.print("\t\tEnter Quantity: ");
                                     int cartQuantity = sc.nextInt();
-                                    billingSystem.addItem(cartItem, cartQuantity);
+                                    
+                                    if (cartQuantity <= cartItem.getQuantity()) {
+                                        billingSystem.addItem(cartItem, cartQuantity);
+                                    } else {
+                                        System.out.println("\t\tError: Insufficient Stock! Only " + cartItem.getQuantity() + " items left.");
+                                    }
                                 } else {
                                     System.out.println("\t\tItem not found.");
                                 }
                             }
                             case 2 -> billingSystem.viewItems();
-                            case 3 -> {
-                                // Clear cart logic by assigning a fresh instance
-                                billingSystem = new BillingSystem();
-                                System.out.println("\t\tYour shopping cart has been emptied.");
+                            case 3 -> { 
+                                System.out.print("\t\tEnter Item Name to alter: ");
+                                String targetName = sc.nextLine();
+                                Item mainStock = supermarket.searchItem(targetName);
+                                if (mainStock != null) {
+                                    System.out.print("\t\tEnter New Quantity: ");
+                                    int targetQty = sc.nextInt();
+                                    if (targetQty <= mainStock.getQuantity()) {
+                                        billingSystem.updateCartQuantity(targetName, targetQty);
+                                    } else {
+                                        System.out.println("\t\tError: Inventory cannot support that level of stock.");
+                                    }
+                                } else {
+                                    System.out.println("\t\tItem not matching system data.");
+                                }
                             }
-                            case 4 -> {
+                            case 4 -> { 
+                                System.out.print("\t\tEnter Item Name to remove: ");
+                                String removeName = sc.nextLine();
+                                billingSystem.removeItemFromCart(removeName);
+                            }
+                            case 5 -> {
+                                if(billingSystem.getCartItems().isEmpty()) {
+                                    System.out.println("\t\tCannot generate payment totals for empty carts.");
+                                    break;
+                                }
                                 double totalAmount = billingSystem.generateBill();
                                 System.out.println("\n\t\tSelect Payment Method:");
-                                System.out.println("\t\t1. Cash");
-                                System.out.println("\t\t2. Credit/Debit Card");
+                                System.out.println("\t\t1. Cash (F-16)");
+                                System.out.println("\t\t2. Credit/Debit Card (F-17)");
                                 System.out.print("\t\tEnter your choice: ");
                                 int paymentChoice = sc.nextInt();
                                 sc.nextLine();
@@ -443,6 +451,9 @@ public class SuperMarket {
                                     supermarket.paymentMethod = new CashPayment();
                                 }
                                 supermarket.paymentMethod.processPayment(totalAmount);
+                                
+                                billingSystem.deductStock(supermarket.inventoryRepo);
+                                System.out.println("\t\tInventory tracking system updated successfully.");
                             }
                             default -> System.out.println("\t\tInvalid choice.");
                         }
