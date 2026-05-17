@@ -1,4 +1,4 @@
-package supermarket;
+package com.mycompany.supermarket;
 
 import java.util.ArrayList;
 
