@@ -8,3 +8,4 @@ public class DigitalWalletPayment implements PaymentMethod {
         System.out.println("\t\tProcessing Digital Wallet payment of $" + amount);
         System.out.println("\t\tPayment successful via EasyPaisa/JazzCash.");
     }
+}
