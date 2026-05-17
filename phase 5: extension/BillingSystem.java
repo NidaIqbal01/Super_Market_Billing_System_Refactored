@@ -55,7 +55,7 @@ public double generateBill() {
             .mapToDouble(i -> i.getPrice() * i.getQuantity())
             .sum();
 
-     if (subtotal > 30) {
+     if (subtotal >= 30) {
         discountStrategy = new PercentageDiscount(5);
     } else {
         discountStrategy = new NoDiscount();
