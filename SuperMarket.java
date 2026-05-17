@@ -1,11 +1,10 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- */
+
 
 package com.mycompany.supermarket;
 
 import java.util.ArrayList;
 import java.util.Scanner;
+
 public class SuperMarket {
 
     private final ArrayList<Item> items;
@@ -193,7 +192,6 @@ public class SuperMarket {
         System.out.print("\t\tEnter Password: ");
         String password = sc.nextLine();
 
-        // Standard verification criteria match checks
         if (!username.equalsIgnoreCase("admin") || !password.equals("admin123")) {
             System.out.println("\t\tAccess Denied! Invalid credentials logic matched.");
             System.exit(0);
@@ -378,12 +376,27 @@ public class SuperMarket {
                     }
                 }
                 case 3 -> {
+                    // =========================================================================
+                    // ASK FOR CUSTOMER ID AS SOON AS USER SELECTS BILLING (OPENS OPTION 3)
+                    // =========================================================================
+                    System.out.print("\t\tEnter Customer ID to open Billing Session: ");
+                    String accessId = sc.nextLine();
+                    Customer activeCustomer = supermarket.customerRepo.searchCustomer(accessId);
+
+                    if (activeCustomer == null) {
+                        System.out.println("\t\tAccess Denied: Customer ID not found inside database registry!");
+                        break; // Immediately drops out of case 3 and heads back to the Main Menu
+                    }
+
+                    System.out.println("\t\tAccess Granted: Billing started for " + activeCustomer.getName());
+                    // =========================================================================
+
                     while (true) {
                         System.out.println("\n\t\tBilling System:");
                         System.out.println("\t\t1. Add Item to Cart");
                         System.out.println("\t\t2. View Cart");
-                        System.out.println("\t\t3. Update Cart Quantity (F-13)");
-                        System.out.println("\t\t4. Remove Item from Cart (F-14)");
+                        System.out.println("\t\t3. Update Cart Quantity ");
+                        System.out.println("\t\t4. Remove Item from Cart ");
                         System.out.println("\t\t5. Generate Bill & Pay");
                         System.out.println("\t\t6. Back to Main Menu");
                         System.out.print("\t\tEnter your choice: ");
@@ -437,10 +450,11 @@ public class SuperMarket {
                                     System.out.println("\t\tCannot generate payment totals for empty carts.");
                                     break;
                                 }
+
                                 double totalAmount = billingSystem.generateBill();
                                 System.out.println("\n\t\tSelect Payment Method:");
-                                System.out.println("\t\t1. Cash (F-16)");
-                                System.out.println("\t\t2. Credit/Debit Card (F-17)");
+                                System.out.println("\t\t1. Cash ");
+                                System.out.println("\t\t2. Credit/Debit Card ");
                                 System.out.print("\t\tEnter your choice: ");
                                 int paymentChoice = sc.nextInt();
                                 sc.nextLine();
