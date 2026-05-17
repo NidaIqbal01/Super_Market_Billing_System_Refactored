@@ -30,7 +30,7 @@ public class BillingSystem {
         System.out.println("\t\t       RECEIPT TOTALS           ");
         System.out.println("\t\t================================");
         System.out.printf("\t\tSubtotal: $%.2f\n", subtotal);
-        System.out.printf("\t\tTax (5%%): $%.2f\n", tax);
+        System.out.printf("\t\tTax (5%): $%.2f\n", tax);
         System.out.printf("\t\tTotal Due: $%.2f\n", total);
         System.out.println("\t\t================================");
 
