@@ -1,4 +1,4 @@
-package supermarket;
+package com.mycompany.supermarket;
 
 // OCP Extension: Percentage based discount strategy
 public class PercentageDiscount implements DiscountStrategy {
