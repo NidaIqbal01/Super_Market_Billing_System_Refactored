@@ -1,4 +1,4 @@
-package supermarket;
+package com.mycompany.supermarket;
 
 // Default behavior when no discount is applied
 public class NoDiscount implements DiscountStrategy {
