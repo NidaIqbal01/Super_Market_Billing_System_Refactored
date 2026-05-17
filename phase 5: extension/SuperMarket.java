@@ -1,4 +1,4 @@
-package supermarket;
+package com.mycompany.supermarket;
 
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -9,15 +9,14 @@ public class SuperMarket {
     private final ArrayList<Customer> customers;
     private PaymentMethod paymentMethod;
 
-    private final InventoryRepository inventoryRepo;
-    private final CustomerRepository customerRepo;
+    public final InventoryRepository inventoryRepo;
+    public final CustomerRepository customerRepo;
 
     public SuperMarket(ArrayList<Item> items, ArrayList<Customer> customers, PaymentMethod paymentMethod) {
         this.items = items;
         this.customers = customers;
         this.paymentMethod = paymentMethod;
         
-        // Connect clean repositories to abstract data arrays
         this.inventoryRepo = new InventoryRepository(items);
         this.customerRepo = new CustomerRepository(customers);
     }
@@ -49,7 +48,7 @@ public class SuperMarket {
             System.out.println("\t\t3. All Fields");
             System.out.print("\t\tEnter your choice: ");
             int updateChoice = sc.nextInt();
-            sc.nextLine(); // Consume newline
+            sc.nextLine(); 
 
             switch (updateChoice) {
                 case 1 -> {
@@ -84,8 +83,13 @@ public class SuperMarket {
     }
 
     public void deleteItem(String name) {
-        items.removeIf(item -> item.getName().equalsIgnoreCase(name));
-        System.out.println("Deleted item: " + name);
+        Item itemToDelete = inventoryRepo.searchItem(name);
+        if (itemToDelete != null) {
+            inventoryRepo.removeItem(itemToDelete);
+            System.out.println("Deleted item: " + name);
+        } else {
+            System.out.println("Item not found inside inventory system.");
+        }
     }
 
     public Item searchItem(String name) {
@@ -116,7 +120,7 @@ public class SuperMarket {
         System.out.println("\t\t4. All Fields");
         System.out.print("\t\tEnter your choice: ");
         int updateChoice = sc.nextInt();
-        sc.nextLine(); // Consume newline
+        sc.nextLine(); 
 
         switch (updateChoice) {
             case 1 -> {
@@ -165,7 +169,7 @@ public class SuperMarket {
     public void deleteCustomer(String customerId) {
         Customer customerToDelete = customerRepo.searchCustomer(customerId);
         if (customerToDelete != null) {
-            customers.remove(customerToDelete);
+            customerRepo.removeCustomer(customerToDelete);
             System.out.println("\t\tCustomer deleted.");
         } else {
             System.out.println("\t\tCustomer ID not found.");
@@ -175,12 +179,30 @@ public class SuperMarket {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
+        // =========================================================================
+        // RESTORED LOGIN VERIFICATION SYSTEMS
+        // =========================================================================
+        System.out.println("\t\t--------------------------------------------------");
+        System.out.println("\t\t      SUPERMARKET MANAGEMENT SYSTEM LOGIN         ");
+        System.out.println("\t\t--------------------------------------------------");
+        System.out.print("\t\tEnter Username: ");
+        String username = sc.nextLine();
+        System.out.print("\t\tEnter Password: ");
+        String password = sc.nextLine();
+
+        if (!username.equalsIgnoreCase("admin") || !password.equals("admin123")) {
+            System.out.println("\t\tAccess Denied! Invalid credentials logic matched.");
+            System.exit(0);
+        }
+        System.out.println("\t\tAccess Granted! Loading system dashboard structures...");
+
         ArrayList<Item> items = new ArrayList<>();
         ArrayList<Customer> customers = new ArrayList<>();
 
         PaymentMethod pm = new CashPayment(); 
         SuperMarket supermarket = new SuperMarket(items, customers, pm);
-        LowStockService lowStockService = new LowStockService(); //new feature's object creation
+        LowStockService lowStockService = new LowStockService();
+        BillingSystem billingSystem = new BillingSystem();
 
         while (true) {
             System.out.println("\n\t\t* * * * * * * * * * * * * * * * * * * * * * * * * ");
@@ -188,7 +210,7 @@ public class SuperMarket {
             System.out.println("\t\t* * * * * * * * * * * * * * * * * * * * * * * * * ");
             System.out.println("\t\t| 1) Customer  |\n\t\t| 2) Inventory |\n\t\t| 3) Billing   |\n\t\t| 4) Exit      |\n\t\t| Enter your choice: ");
             int choice = sc.nextInt();
-            sc.nextLine(); // Consume newline
+            sc.nextLine(); 
 
             switch (choice) {
                 case 1 -> {
@@ -200,8 +222,7 @@ public class SuperMarket {
                         System.out.println("\t\t3. View Customer");
                         System.out.println("\t\t4. Delete Customer");
                         System.out.println("\t\t5. Search Customer");
-                        System.out.println("\t\t6. Check Low Stock Items");
-                        System.out.println("\t\t7. Back to Main Menu");
+                        System.out.println("\t\t6. Back to Main Menu");
                         System.out.print("\t\tEnter your choice: ");
                         int customerChoice = sc.nextInt();
                         sc.nextLine();
@@ -298,8 +319,7 @@ public class SuperMarket {
                                 String searchId = sc.nextLine();
                                 supermarket.viewCustomer(searchId);
                             }
-                            case 6 -> lowStockService.checkLowStock(items); //feature extension for low stock warning
-                            case 7 -> inventoryMenuActive = false;
+                            case 6 -> customerMenuActive = false;
                             default -> System.out.println("\t\tInvalid choice.");
                         }
                     }
@@ -313,7 +333,8 @@ public class SuperMarket {
                         System.out.println("\t\t3. Update Item");
                         System.out.println("\t\t4. Delete Item");
                         System.out.println("\t\t5. Search Item");
-                        System.out.println("\t\t6. Back to Main Menu");
+                        System.out.println("\t\t6. Check Low Stock Items");
+                        System.out.println("\t\t7. Back to Main Menu");
                         System.out.print("\t\tEnter your choice: ");
                         int inventoryChoice = sc.nextInt();
                         sc.nextLine();
@@ -356,18 +377,34 @@ public class SuperMarket {
                     }
                 }
                 case 3 -> {
-                    BillingSystem billingSystem = new BillingSystem();
+                    // =========================================================================
+                    // ASK FOR CUSTOMER ID AS SOON AS USER SELECTS BILLING (OPENS OPTION 3)
+                    // =========================================================================
+                    System.out.print("\t\tEnter Customer ID to open Billing Session: ");
+                    String accessId = sc.nextLine();
+                    Customer activeCustomer = supermarket.customerRepo.searchCustomer(accessId);
+
+                    if (activeCustomer == null) {
+                        System.out.println("\t\tAccess Denied: Customer ID not found inside database registry!");
+                        break; // Immediately drops out of case 3 and heads back to the Main Menu
+                    }
+
+                    System.out.println("\t\tAccess Granted: Billing started for " + activeCustomer.getName());
+                    // =========================================================================
+
                     while (true) {
                         System.out.println("\n\t\tBilling System:");
                         System.out.println("\t\t1. Add Item to Cart");
                         System.out.println("\t\t2. View Cart");
-                        System.out.println("\t\t3. Generate Bill");
-                        System.out.println("\t\t4. Back to Main Menu");
+                        System.out.println("\t\t3. Update Cart Quantity ");
+                        System.out.println("\t\t4. Remove Item from Cart ");
+                        System.out.println("\t\t5. Generate Bill & Pay");
+                        System.out.println("\t\t6. Back to Main Menu");
                         System.out.print("\t\tEnter your choice: ");
                         int billingChoice = sc.nextInt();
                         sc.nextLine();
 
-                        if (billingChoice == 4) break;
+                        if (billingChoice == 6) break;
 
                         switch (billingChoice) {
                             case 1 -> {
@@ -377,33 +414,66 @@ public class SuperMarket {
                                 if (cartItem != null) {
                                     System.out.print("\t\tEnter Quantity: ");
                                     int cartQuantity = sc.nextInt();
-                                    billingSystem.addItem(cartItem, cartQuantity);
+                                    
+                                    if (cartQuantity <= cartItem.getQuantity()) {
+                                        billingSystem.addItem(cartItem, cartQuantity);
+                                    } else {
+                                        System.out.println("\t\tError: Insufficient Stock! Only " + cartItem.getQuantity() + " items left.");
+                                    }
                                 } else {
                                     System.out.println("\t\tItem not found.");
                                 }
                             }
                             case 2 -> billingSystem.viewItems();
-                            case 3 -> {
+                            case 3 -> { 
+                                System.out.print("\t\tEnter Item Name to alter: ");
+                                String targetName = sc.nextLine();
+                                Item mainStock = supermarket.searchItem(targetName);
+                                if (mainStock != null) {
+                                    System.out.print("\t\tEnter New Quantity: ");
+                                    int targetQty = sc.nextInt();
+                                    if (targetQty <= mainStock.getQuantity()) {
+                                        billingSystem.updateCartQuantity(targetName, targetQty);
+                                    } else {
+                                        System.out.println("\t\tError: Inventory cannot support that level of stock.");
+                                    }
+                                } else {
+                                    System.out.println("\t\tItem not matching system data.");
+                                }
+                            }
+                            case 4 -> { 
+                                System.out.print("\t\tEnter Item Name to remove: ");
+                                String removeName = sc.nextLine();
+                                billingSystem.removeItemFromCart(removeName);
+                            }
+                            case 5 -> {
+                                if(billingSystem.getCartItems().isEmpty()) {
+                                    System.out.println("\t\tCannot generate payment totals for empty carts.");
+                                    break;
+                                }
+
                                 double totalAmount = billingSystem.generateBill();
                                 System.out.println("\n\t\tSelect Payment Method:");
-                                System.out.println("\t\t1. Cash");
-                                System.out.println("\t\t2. Credit/Debit Card");
+                                System.out.println("\t\t1. Cash ");
+                                System.out.println("\t\t2. Credit/Debit Card ");
                                 System.out.println("\t\t3. Digital Wallet");
                                 System.out.print("\t\tEnter your choice: ");
                                 int paymentChoice = sc.nextInt();
                                 sc.nextLine();
 
-                                // OCP Compliant assignment utilizing polymorphically bound subclasses
                                 if (paymentChoice == 2) {
-                                  supermarket.paymentMethod = new CardPayment();
+                                   supermarket.paymentMethod = new CardPayment();
                                 }
-                                else if (paymentChoice == 3) { //extension for digital payment feature
-                                   supermarket.paymentMethod = new DigitalWalletPayment();
+                                else if (paymentChoice == 3) {
+                                    supermarket.paymentMethod = new DigitalWalletPayment();
                                 }
                                 else {
-                                   supermarket.paymentMethod = new CashPayment();
+                                    supermarket.paymentMethod = new CashPayment();
                                 }
                                 supermarket.paymentMethod.processPayment(totalAmount);
+                                
+                                billingSystem.deductStock(supermarket.inventoryRepo);
+                                System.out.println("\t\tInventory tracking system updated successfully.");
                             }
                             default -> System.out.println("\t\tInvalid choice.");
                         }
